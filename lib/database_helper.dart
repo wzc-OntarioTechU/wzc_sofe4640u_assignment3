@@ -10,7 +10,8 @@ class DatabaseHelper {
       join(await getDatabasesPath(), "food.db"),
       onCreate: (Database db, int version) async {
         await db.execute("CREATE TABLE foods(id INTEGER PRIMARY KEY, name TEXT NOT NULL, price DOUBLE);"
-            "CREATE TABLE plans(id INTEGER PRIMARY KEY, name TEXT NOT NULL, date DATE NOT NULL, targetPrice DOUBLE, foods TEXT);");
+            "CREATE TABLE plans(id INTEGER PRIMARY KEY, name TEXT NOT NULL, date DATE NOT NULL, targetPrice DOUBLE, foods TEXT);"
+            "CREATE TABLE favourites(id INTEGER PRIMARY KEY);");
       },
       version: 1
     );
@@ -109,6 +110,19 @@ class DatabaseHelper {
       plans.add(plan);
     }
     return plans;
+  }
+
+  Future<void> addFavourite(int id) async {
+    await database.rawInsert("INSERT INTO favourites (id) values (?);", id);
+  }
+
+  Future<List<Food>> getFavourites() async {
+    List<Map> rows = await database.rawQuery("SELECT id FROM favourites;");
+    List<Food> foods = List<Food>.empty(growable: true);
+    for (Map row in rows) {
+      foods.add(await getFood(row['id']));
+    }
+    return foods;
   }
 }
 
